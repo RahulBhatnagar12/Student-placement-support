@@ -181,5 +181,9 @@ export const generatePlacementPDF = (formData: FormData): Blob => {
     );
   }
 
-  return doc.output("blob");
+ const pdfBlob = doc.output("blob");
+doc.save(
+  `${formData.rollNumber}_${formData.studentName.replace(/\s+/g, "_")}_HBTU_Placement.pdf`
+);
+return pdfBlob;
 };

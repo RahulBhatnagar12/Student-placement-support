@@ -1,49 +1,61 @@
 import { useQuery } from "@tanstack/react-query";
 import { Search, Loader2, FileX } from "lucide-react";
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+
 import Layout from "@/components/Layout";
 import PlacementCard from "@/components/PlacementCard";
 import { Input } from "@/components/ui/input";
 
+/* =========================
+   TYPES
+========================= */
 interface PlacementSubmission {
-  id: string;
-  student_name: string;
-  roll_number: string;
+  _id: string;
+  studentName: string;
+  rollNumber: string;
   branch: string;
   programme: string;
-  selected_company: string;
-  selected_profile: string;
-  pdf_url: string | null;
-  created_at: string;
+  selectedCompany: string;
+  selectedProfile: string;
+  pdfUrl?: string;
+  createdAt: string;
 }
 
+
+/* =========================
+   COMPONENT
+========================= */
 const PlacementInsights = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { data: submissions, isLoading, error } = useQuery({
+  const {
+    data: submissions,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["placementSubmissions"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("placement_submissions")
-        .select("id, student_name, roll_number, branch, programme, selected_company, selected_profile, pdf_url, created_at")
-        .order("created_at", { ascending: false });
+    queryFn: async (): Promise<PlacementSubmission[]> => {
+      const res = await fetch("http://localhost:5050/api/placements");
 
-      if (error) throw error;
-      return data as PlacementSubmission[];
+      if (!res.ok) {
+        throw new Error("Failed to fetch placement data");
+      }
+
+      return res.json();
     },
   });
 
   const filteredSubmissions = submissions?.filter((submission) => {
-    const query = searchQuery.toLowerCase();
-    return (
-      submission.student_name.toLowerCase().includes(query) ||
-      submission.roll_number.toLowerCase().includes(query) ||
-      submission.branch.toLowerCase().includes(query) ||
-      submission.selected_company.toLowerCase().includes(query) ||
-      submission.selected_profile.toLowerCase().includes(query)
-    );
-  });
+  const query = searchQuery.toLowerCase();
+
+  return (
+    submission.studentName?.toLowerCase().includes(query) ||
+    submission.rollNumber?.toLowerCase().includes(query) ||
+    submission.branch?.toLowerCase().includes(query) ||
+    submission.selectedCompany?.toLowerCase().includes(query) ||
+    submission.selectedProfile?.toLowerCase().includes(query)
+  );
+});
 
   return (
     <Layout>
@@ -60,7 +72,7 @@ const PlacementInsights = () => {
             </p>
           </div>
 
-          {/* Search Bar */}
+          {/* Search */}
           <div className="relative max-w-md mx-auto mb-10">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <Input
@@ -90,16 +102,16 @@ const PlacementInsights = () => {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredSubmissions.map((submission) => (
                 <PlacementCard
-                  key={submission.id}
-                  id={submission.id}
-                  studentName={submission.student_name}
-                  rollNumber={submission.roll_number}
+                  key={submission._id}
+                  id={submission._id}
+                  studentName={submission.studentName}
+                  rollNumber={submission.rollNumber}
                   branch={submission.branch}
                   programme={submission.programme}
-                  selectedCompany={submission.selected_company}
-                  selectedProfile={submission.selected_profile}
-                  pdfUrl={submission.pdf_url}
-                  createdAt={submission.created_at}
+                  selectedCompany={submission.selectedCompany}
+                  selectedProfile={submission.selectedProfile}
+                  pdfUrl={submission.pdfUrl}
+                  createdAt={submission.createdAt}
                 />
               ))}
             </div>

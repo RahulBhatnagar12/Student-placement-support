@@ -78,7 +78,11 @@ const PlacementCard = ({
             asChild
             className="w-full bg-primary hover:bg-navy-light text-primary-foreground font-body gap-2"
           >
-            <a href={pdfUrl} target="_blank" rel="noopener noreferrer">
+           <a
+  href={`http://localhost:5050${pdfUrl}`}
+  target="_blank"
+  rel="noopener noreferrer"
+>
               <FileText className="w-4 h-4" />
               View Experience PDF
               <Download className="w-4 h-4 ml-auto" />

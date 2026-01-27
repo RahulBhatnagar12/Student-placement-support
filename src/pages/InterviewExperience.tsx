@@ -1,13 +1,19 @@
-import { useState } from "react";
+import { useState} from "react";
+
 import { useForm, useFieldArray } from "react-hook-form";
+
 import { zodResolver } from "@hookform/resolvers/zod";
+
 import { z } from "zod";
+
 import { useNavigate } from "react-router-dom";
-import { Plus, Trash2, Send, Loader2 } from "lucide-react";
+
+import { Plus, Trash2, Send, Loader2 } from 
+"lucide-react";
+
 import { toast } from "sonner";
 
 import Layout from "@/components/Layout";
-import { supabase } from "@/integrations/supabase/client";
 import { generatePlacementPDF } from "@/lib/generatePDF";
 
 import { Button } from "@/components/ui/button";
@@ -31,31 +37,31 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+/* ================= SCHEMA (UNCHANGED) ================= */
+
 const companySchema = z.object({
   companyName: z.string().min(1, "Company name is required"),
   profile: z.string().min(1, "Profile is required"),
 });
 
 const formSchema = z.object({
-  studentName: z.string().min(2, "Name must be at least 2 characters").max(100),
-  rollNumber: z.string().min(1, "Roll number is required").max(20),
-  branch: z.string().min(1, "Branch is required"),
-  programme: z.string().min(1, "Programme is required"),
+  studentName: z.string().min(2).max(100),
+  rollNumber: z.string().min(1).max(20),
+  branch: z.string().min(1),
+  programme: z.string().min(1),
   personalNote: z.string().max(500).optional(),
   companiesShortlisted: z.array(companySchema).optional(),
-  selectedCompany: z.string().min(1, "Selected company is required"),
-  selectedProfile: z.string().min(1, "Selected profile is required"),
-  selectionProcess: z.string().min(50, "Please provide detailed selection process (min 50 characters)"),
+  selectedCompany: z.string().min(1),
+  selectedProfile: z.string().min(1),
+  selectionProcess: z.string().min(50),
   technicalQuestions: z.string().optional(),
   hrQuestions: z.string().optional(),
   preparationResources: z.string().optional(),
   adviceDos: z.string().optional(),
   adviceDonts: z.string().optional(),
-  consentGiven: z.literal(true, {
-    errorMap: () => ({ message: "You must give consent to submit" }),
-  }),
-  consentName: z.string().min(2, "Name is required for consent"),
-  consentRollNumber: z.string().min(1, "Roll number is required for consent"),
+  consentGiven: z.literal(true),
+  consentName: z.string().min(2),
+  consentRollNumber: z.string().min(1),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -109,15 +115,19 @@ const InterviewExperience = () => {
     name: "companiesShortlisted",
   });
 
+  /* ================= ONLY BACKEND PART CHANGED ================= */
+
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
+
     try {
-      // Generate PDF
-      const validCompanies = (data.companiesShortlisted || []).filter(
-        (c) => c.companyName && c.profile
-      ) as { companyName: string; profile: string }[];
-      
-      const pdfBlob = generatePlacementPDF({
+     const validCompanies = (data.companiesShortlisted || []).filter(
+  (c): c is { companyName: string; profile: string } =>
+    !!c.companyName && !!c.profile
+);
+
+      // PDF generation (same as before)
+     const pdfBlob =  generatePlacementPDF({
         studentName: data.studentName,
         rollNumber: data.rollNumber,
         branch: data.branch,
@@ -134,59 +144,69 @@ const InterviewExperience = () => {
         adviceDonts: data.adviceDonts,
       });
 
-      // Upload PDF to storage
-      const fileName = `${data.rollNumber}_${data.studentName.replace(/\s+/g, "_")}_HBTU_Placement.pdf`;
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from("placement-pdfs")
-        .upload(fileName, pdfBlob, {
-          contentType: "application/pdf",
-          upsert: true,
-        });
+const pdfFile = new File(
+  [pdfBlob],
+  `${data.rollNumber}_${data.studentName}.pdf`,
+  { type: "application/pdf" }
+);
+//       const url = URL.createObjectURL(pdfBlob);
+// const a = document.createElement("a");
+// a.href = url;
+// a.download = `${data.rollNumber}_${data.studentName}.pdf`;
+// a.click();
+// URL.revokeObjectURL(url);
+   const formData = new FormData();
+    formData.append("pdf", pdfFile);
 
-      if (uploadError) throw uploadError;
+    formData.append("studentName", data.studentName);
+    formData.append("rollNumber", data.rollNumber);
+    formData.append("branch", data.branch);
+    formData.append("programme", data.programme);
 
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from("placement-pdfs")
-        .getPublicUrl(uploadData.path);
+    formData.append("personalNote", data.personalNote || "");
+    formData.append(
+      "companiesShortlisted",
+      JSON.stringify(validCompanies)
+    );
 
-      // Insert submission to database
-      const { error: insertError } = await supabase
-        .from("placement_submissions")
-        .insert({
-          student_name: data.studentName,
-          roll_number: data.rollNumber,
-          branch: data.branch,
-          programme: data.programme,
-          personal_note: data.personalNote || null,
-          companies_shortlisted: data.companiesShortlisted || [],
-          selected_company: data.selectedCompany,
-          selected_profile: data.selectedProfile,
-          selection_process: data.selectionProcess,
-          technical_questions: data.technicalQuestions || null,
-          hr_questions: data.hrQuestions || null,
-          preparation_resources: data.preparationResources || null,
-          advice_dos: data.adviceDos || null,
-          advice_donts: data.adviceDonts || null,
-          consent_given: true,
-          pdf_url: urlData.publicUrl,
-        });
+    formData.append("selectedCompany", data.selectedCompany);
+    formData.append("selectedProfile", data.selectedProfile);
 
-      if (insertError) throw insertError;
+    formData.append("selectionProcess", data.selectionProcess);
+    formData.append("technicalQuestions", data.technicalQuestions || "");
+    formData.append("hrQuestions", data.hrQuestions || "");
 
-      toast.success("Experience submitted successfully!", {
-        description: "Thank you for contributing to the community.",
-      });
+    formData.append(
+      "preparationResources",
+      data.preparationResources || ""
+    );
+    formData.append("adviceDos", data.adviceDos || "");
+    formData.append("adviceDonts", data.adviceDonts || "");
+
+
+
+
+      // 🔥 MERN BACKEND CALL (REPLACES SUPABASE)
+      const res = await fetch(
+        "http://localhost:5050/api/placements",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (!res.ok) throw new Error("API failed");
+
+      toast.success("Experience submitted successfully!");
       navigate("/placement-insights");
     } catch (error) {
-      console.error("Submission error:", error);
-      toast.error("Failed to submit experience", {
-        description: "Please try again later.",
-      });
+      console.error(error);
+      toast.error("Failed to submit experience");
     } finally {
       setIsSubmitting(false);
     }
   };
+
 
   return (
     <Layout>
