@@ -16,7 +16,8 @@ const __dirname = path.dirname(__filename);
 /* CORS */
 app.use(
   cors({
-    origin: "http://localhost:8080",
+    origin: ["http://localhost:8080","https://student-placement-support.netlify.app/"],
+
     credentials: true,
   })
 );

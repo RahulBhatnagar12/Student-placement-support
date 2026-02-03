@@ -10,7 +10,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "lice nse": "ISC",
   "type": "module",
   "dependencies": {
     "cors": "^2.8.6",

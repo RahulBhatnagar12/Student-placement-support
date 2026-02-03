@@ -35,7 +35,9 @@ const PlacementInsights = () => {
   } = useQuery({
     queryKey: ["placementSubmissions"],
     queryFn: async (): Promise<PlacementSubmission[]> => {
-      const res = await fetch("http://localhost:5050/api/placements");
+      const res = await fetch(
+  `${import.meta.env.VITE_API_URL}/api/placements`
+);
 
       if (!res.ok) {
         throw new Error("Failed to fetch placement data");
