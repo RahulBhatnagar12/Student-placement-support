@@ -43,10 +43,15 @@ const PlacementCard = ({
     day: "numeric",
   });
 
-  const isValidPdf = pdfUrl && pdfUrl.startsWith("http");
+  /* ✅ ONLY Cloudinary / Absolute URLs are valid */
+  const isValidPdf =
+    typeof pdfUrl === "string" &&
+    (pdfUrl.startsWith("https://res.cloudinary.com") ||
+      pdfUrl.startsWith("http"));
 
   return (
     <Card className="group overflow-hidden border-border/50 bg-card hover:shadow-lg transition-all duration-300 animate-fade-in">
+      {/* HEADER */}
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
@@ -62,6 +67,7 @@ const PlacementCard = ({
               </p>
             </div>
           </div>
+
           <Badge variant="secondary" className="font-body">
             <Calendar className="w-3 h-3 mr-1" />
             {formattedDate}
@@ -69,6 +75,7 @@ const PlacementCard = ({
         </div>
       </CardHeader>
 
+      {/* CONTENT */}
       <CardContent className="space-y-4">
         <div className="flex items-center gap-2 text-sm font-body">
           <GraduationCap className="w-4 h-4 text-accent" />
@@ -90,20 +97,28 @@ const PlacementCard = ({
         </div>
       </CardContent>
 
+      {/* FOOTER */}
       <CardFooter className="pt-3 border-t border-border/50">
         {isValidPdf ? (
           <Button
             asChild
             className="w-full bg-primary hover:bg-navy-light text-primary-foreground font-body gap-2"
           >
-            <a href={pdfUrl} target="_blank" rel="noopener noreferrer">
+            <a
+              href={pdfUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <FileText className="w-4 h-4" />
               View Experience PDF
               <Download className="w-4 h-4 ml-auto" />
             </a>
           </Button>
         ) : (
-          <Button disabled className="w-full font-body gap-2 opacity-70">
+          <Button
+            disabled
+            className="w-full font-body gap-2 opacity-60 cursor-not-allowed"
+          >
             <FileText className="w-4 h-4" />
             PDF Unavailable
           </Button>
