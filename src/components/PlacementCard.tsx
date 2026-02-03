@@ -79,7 +79,7 @@ const PlacementCard = ({
             className="w-full bg-primary hover:bg-navy-light text-primary-foreground font-body gap-2"
           >
            <a
-  href={`${import.meta.env.VITE_API_URL}${pdfUrl}`}
+  href={pdfUrl}
 
   target="_blank"
   rel="noopener noreferrer"
