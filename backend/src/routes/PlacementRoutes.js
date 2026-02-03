@@ -1,6 +1,7 @@
 import express from "express";
 import Placement from "../models/Placement.js";
-import { upload } from "../utils/upload.js";
+import upload from "../utils/multer.js";
+import cloudinary from "../config/cloudinary.js";
 
 const router = express.Router();
 router.options("/", (req, res) => {

@@ -34,7 +34,7 @@ app.get("/", (req, res) => {
   });
 });
 /* ✅ THIS LINE FIXES PDF 404 */
-app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+// app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 app.use("/api/placements", placementRoutes);
 
