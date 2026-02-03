@@ -16,13 +16,24 @@ const __dirname = path.dirname(__filename);
 /* CORS */
 app.use(
   cors({
-    origin: [
-      "https://student-placement-support.netlify.app",
-    ],
+    origin: (origin, callback) => {
+      // allow requests with no origin (Postman, server-to-server)
+      if (!origin) return callback(null, true);
+
+      if (
+        origin.endsWith(".netlify.app")
+      ) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"));
+    },
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+app.options("*", cors());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
