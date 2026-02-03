@@ -23,7 +23,12 @@ app.use(
 );
 
 app.use(express.json());
-
+app.get("/", (req, res) => {
+  res.json({
+    status: "OK",
+    message: "Placement Backend is running 🚀",
+  });
+});
 /* ✅ THIS LINE FIXES PDF 404 */
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
