@@ -5,9 +5,9 @@ import cloudinary from "../config/cloudinary.js";
 
 const router = express.Router();
 
-/**
- * POST – submit placement + PDF + PHOTO (CLOUDINARY)
- */
+/* =====================================================
+   POST – Submit Placement Experience (PDF + Photo)
+   ===================================================== */
 router.post(
   "/",
   upload.fields([
@@ -16,32 +16,40 @@ router.post(
   ]),
   async (req, res) => {
     try {
+      /* ------------------ PDF VALIDATION ------------------ */
       if (!req.files?.pdf?.[0]?.buffer) {
-        return res.status(400).json({ message: "PDF not uploaded" });
+        return res.status(400).json({ message: "PDF not uploaded properly" });
       }
 
-      // 🔥 Upload PDF
+      /* ------------------ UPLOAD PDF ------------------ */
+      const pdfBase64 = req.files.pdf[0].buffer.toString("base64");
+
       const pdfUpload = await cloudinary.uploader.upload(
-        `data:application/pdf;base64,${req.files.pdf[0].buffer.toString("base64")}`,
+        `data:application/pdf;base64,${pdfBase64}`,
         {
           resource_type: "raw",
           folder: "placement_pdfs",
         }
       );
 
-      // 🔥 Upload Photo (optional)
+      /* ------------------ UPLOAD PHOTO (OPTIONAL) ------------------ */
       let photoUrl = null;
-      if (req.files.photo?.[0]?.buffer) {
+
+      if (req.files?.photo?.[0]?.buffer) {
+        const photoBase64 =
+          req.files.photo[0].buffer.toString("base64");
+
         const photoUpload = await cloudinary.uploader.upload(
-          `data:${req.files.photo[0].mimetype};base64,${req.files.photo[0].buffer.toString("base64")}`,
+          `data:${req.files.photo[0].mimetype};base64,${photoBase64}`,
           {
             folder: "placement_photos",
           }
         );
+
         photoUrl = photoUpload.secure_url;
       }
 
-      // 🔥 Save to MongoDB
+      /* ------------------ SAVE TO MONGODB ------------------ */
       const placement = await Placement.create({
         studentName: req.body.studentName,
         rollNumber: req.body.rollNumber,
@@ -63,8 +71,8 @@ router.post(
         adviceDos: req.body.adviceDos || "",
         adviceDonts: req.body.adviceDonts || "",
 
-        pdfUrl: pdfUpload.secure_url,
-        photoUrl,
+        pdfUrl: pdfUpload.secure_url, // ✅ Cloudinary URL
+        photoUrl, // ✅ Cloudinary URL or null
       });
 
       res.status(201).json(placement);
@@ -75,12 +83,17 @@ router.post(
   }
 );
 
-/**
- * GET – fetch all placements
- */
+/* =====================================================
+   GET – Fetch All Placements
+   ===================================================== */
 router.get("/", async (req, res) => {
-  const placements = await Placement.find().sort({ createdAt: -1 });
-  res.json(placements);
+  try {
+    const placements = await Placement.find().sort({ createdAt: -1 });
+    res.json(placements);
+  } catch (err) {
+    console.error("FETCH ERROR:", err);
+    res.status(500).json({ message: "Failed to fetch placements" });
+  }
 });
 
 export default router;
