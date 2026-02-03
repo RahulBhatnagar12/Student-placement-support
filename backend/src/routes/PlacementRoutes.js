@@ -3,19 +3,48 @@ import Placement from "../models/Placement.js";
 import { upload } from "../utils/upload.js";
 
 const router = express.Router();
+router.options("/", (req, res) => {
+  res.header(
+    "Access-Control-Allow-Origin",
+    "https://student-placement-support.netlify.app"
+  );
+  res.header(
+    "Access-Control-Allow-Methods",
+    "GET,POST,PUT,DELETE,OPTIONS"
+  );
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization"
+  );
+  res.sendStatus(200);
+});
 
 /**
  * POST – submit placement + PDF + PHOTO
  */
 router.post(
   "/",
+  (req, res, next) => {
+    res.header(
+      "Access-Control-Allow-Origin",
+      "https://student-placement-support.netlify.app"
+    );
+    res.header(
+      "Access-Control-Allow-Methods",
+      "GET,POST,PUT,DELETE,OPTIONS"
+    );
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization"
+    );
+    next();
+  },
   upload.fields([
     { name: "pdf", maxCount: 1 },
     { name: "photo", maxCount: 1 },
   ]),
   async (req, res) => {
     try {
-      // PDF mandatory
       if (!req.files || !req.files.pdf) {
         return res.status(400).json({ message: "PDF not uploaded" });
       }
@@ -28,7 +57,6 @@ router.post(
         rollNumber: req.body.rollNumber,
         branch: req.body.branch,
         programme: req.body.programme,
-
         personalNote: req.body.personalNote || "",
 
         companiesShortlisted: req.body.companiesShortlisted
@@ -37,16 +65,13 @@ router.post(
 
         selectedCompany: req.body.selectedCompany,
         selectedProfile: req.body.selectedProfile,
-
         selectionProcess: req.body.selectionProcess,
         technicalQuestions: req.body.technicalQuestions || "",
         hrQuestions: req.body.hrQuestions || "",
-
         preparationResources: req.body.preparationResources || "",
         adviceDos: req.body.adviceDos || "",
         adviceDonts: req.body.adviceDonts || "",
 
-        // ✅ FILE PATHS
         pdfUrl: `/uploads/pdfs/${pdfFile.filename}`,
         photoUrl: photoFile ? `/uploads/photos/${photoFile.filename}` : null,
       });
@@ -58,6 +83,7 @@ router.post(
     }
   }
 );
+
 
 /**
  * GET – fetch all placements
