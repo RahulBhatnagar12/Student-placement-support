@@ -179,10 +179,14 @@ const InterviewExperience = () => {
     if (data.adviceDos) fd.append("adviceDos", data.adviceDos);
     if (data.adviceDonts) fd.append("adviceDonts", data.adviceDonts);
 
-    const res = await fetch("http://localhost:5050/api/placements", {
-      method: "POST",
-      body: fd,
-    });
+    const res = await fetch(
+  `${import.meta.env.VITE_API_URL}/api/placements`,
+  {
+    method: "POST",
+    body: fd,
+  }
+);
+
     console.log(res);
 
     if (!res.ok) {
