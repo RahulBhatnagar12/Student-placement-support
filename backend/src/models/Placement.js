@@ -23,6 +23,10 @@ const placementSchema = new mongoose.Schema(
     selectedProfile: { type: String, required: true },
 
     selectionProcess: { type: String, required: true },
+    photoUrl: {
+  type: String,
+  default: null,
+},
     technicalQuestions: String,
     hrQuestions: String,
 

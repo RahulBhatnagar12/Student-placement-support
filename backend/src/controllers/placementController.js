@@ -16,7 +16,6 @@ export const createPlacement = async (req, res) => {
       rollNumber: req.body.rollNumber,
       branch: req.body.branch,
       programme: req.body.programme,
-
       personalNote: req.body.personalNote,
       companiesShortlisted: JSON.parse(req.body.companiesShortlisted || "[]"),
 
