@@ -16,11 +16,11 @@ router.post(
   ]),
   async (req, res) => {
     try {
-      if (!req.files?.pdf) {
+      if (!req.files?.pdf?.[0]?.buffer) {
         return res.status(400).json({ message: "PDF not uploaded" });
       }
 
-      /* 🔥 Upload PDF to Cloudinary */
+      // 🔥 Upload PDF
       const pdfUpload = await cloudinary.uploader.upload(
         `data:application/pdf;base64,${req.files.pdf[0].buffer.toString("base64")}`,
         {
@@ -29,9 +29,9 @@ router.post(
         }
       );
 
-      /* 🔥 Upload Photo (optional) */
+      // 🔥 Upload Photo (optional)
       let photoUrl = null;
-      if (req.files.photo) {
+      if (req.files.photo?.[0]?.buffer) {
         const photoUpload = await cloudinary.uploader.upload(
           `data:${req.files.photo[0].mimetype};base64,${req.files.photo[0].buffer.toString("base64")}`,
           {
@@ -41,7 +41,7 @@ router.post(
         photoUrl = photoUpload.secure_url;
       }
 
-      /* 🔥 Save in MongoDB */
+      // 🔥 Save to MongoDB
       const placement = await Placement.create({
         studentName: req.body.studentName,
         rollNumber: req.body.rollNumber,
@@ -63,13 +63,13 @@ router.post(
         adviceDos: req.body.adviceDos || "",
         adviceDonts: req.body.adviceDonts || "",
 
-        pdfUrl: pdfUpload.secure_url, // ✅ CLOUDINARY URL
+        pdfUrl: pdfUpload.secure_url,
         photoUrl,
       });
 
       res.status(201).json(placement);
     } catch (err) {
-      console.error(err);
+      console.error("PLACEMENT UPLOAD ERROR:", err);
       res.status(500).json({ message: "Failed to save placement" });
     }
   }

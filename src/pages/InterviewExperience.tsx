@@ -43,7 +43,7 @@ const formSchema = z.object({
   rollNumber: z.string().min(1),
   branch: z.string().min(1),
   programme: z.string().min(1),
-  photoBase64: z.string().optional(),
+ 
   personalNote: z.string().optional(),
   companiesShortlisted: z.array(companySchema).optional(),
 
@@ -84,7 +84,7 @@ const programmes = ["B.Tech", "M.Tech", "MBA", "MCA", "Ph.D"];
 const InterviewExperience = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+const [photoFile, setPhotoFile] = useState<File | null>(null);
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -92,7 +92,6 @@ const InterviewExperience = () => {
       rollNumber: "",
       branch: "",
       programme: "",
-      photoBase64: undefined,
       personalNote: "",
       companiesShortlisted: [{ companyName: "", profile: "" }],
       selectedCompany: "",
@@ -131,7 +130,7 @@ const InterviewExperience = () => {
       rollNumber: data.rollNumber,
       branch: data.branch,
       programme: data.programme,
-       photoBase64: data.photoBase64, 
+      
       personalNote: data.personalNote,
       companiesShortlisted: validCompanies,
       selectedCompany: data.selectedCompany,
@@ -156,9 +155,9 @@ const InterviewExperience = () => {
 
     const fd = new FormData();
     fd.append("pdf", pdfFile);
-      if (data.photoBase64) {
-  fd.append("photo", data.photoBase64);
-}
+    if (photoFile) {
+      fd.append("photo", photoFile);
+    }
     fd.append("studentName", data.studentName);
     fd.append("rollNumber", data.rollNumber);
     fd.append("branch", data.branch);
@@ -310,38 +309,26 @@ const InterviewExperience = () => {
                     />
                   </div>
              
-               <FormField
-  control={form.control}
-  name="photoBase64"
-  render={() => (
-    <FormItem>
-      <FormLabel className="font-body">
-        Upload Photograph (Optional)
-      </FormLabel>
-      <FormControl>
-        <Input
-          type="file"
-          accept="image/*"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (!file) return;
+          <Card>
+  <CardHeader>
+    <CardTitle className="font-display text-xl">
+      Upload Photograph (Optional)
+    </CardTitle>
+  </CardHeader>
 
-            const reader = new FileReader();
-            reader.onload = () => {
-              form.setValue(
-                "photoBase64",
-                reader.result as string,
-                { shouldValidate: true }
-              );
-            };
-            reader.readAsDataURL(file);
-          }}
-        />
-      </FormControl>
-      <FormMessage />
-    </FormItem>
-  )}
-/>
+  <CardContent>
+    <Input
+      type="file"
+      accept="image/*"
+      onChange={(e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+          setPhotoFile(file); // ✅ REAL FILE
+        }
+      }}
+    />
+  </CardContent>
+</Card>
 
 
                   <FormField
