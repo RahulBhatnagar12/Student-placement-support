@@ -1,5 +1,17 @@
-import { FileText, Download, User, Building2, GraduationCap, Calendar } from "lucide-react";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import {
+  FileText,
+  Download,
+  User,
+  Building2,
+  GraduationCap,
+  Calendar,
+} from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -31,6 +43,8 @@ const PlacementCard = ({
     day: "numeric",
   });
 
+  const isValidPdf = pdfUrl && pdfUrl.startsWith("http");
+
   return (
     <Card className="group overflow-hidden border-border/50 bg-card hover:shadow-lg transition-all duration-300 animate-fade-in">
       <CardHeader className="pb-3">
@@ -43,7 +57,9 @@ const PlacementCard = ({
               <h3 className="font-display font-semibold text-lg text-foreground">
                 {studentName}
               </h3>
-              <p className="text-sm text-muted-foreground font-body">{rollNumber}</p>
+              <p className="text-sm text-muted-foreground font-body">
+                {rollNumber}
+              </p>
             </div>
           </div>
           <Badge variant="secondary" className="font-body">
@@ -56,7 +72,9 @@ const PlacementCard = ({
       <CardContent className="space-y-4">
         <div className="flex items-center gap-2 text-sm font-body">
           <GraduationCap className="w-4 h-4 text-accent" />
-          <span className="text-muted-foreground">{programme} - {branch}</span>
+          <span className="text-muted-foreground">
+            {programme} - {branch}
+          </span>
         </div>
 
         <div className="p-4 bg-secondary/50 rounded-lg">
@@ -73,26 +91,21 @@ const PlacementCard = ({
       </CardContent>
 
       <CardFooter className="pt-3 border-t border-border/50">
-        {pdfUrl ? (
+        {isValidPdf ? (
           <Button
             asChild
             className="w-full bg-primary hover:bg-navy-light text-primary-foreground font-body gap-2"
           >
-           <a
-  href={pdfUrl}
-
-  target="_blank"
-  rel="noopener noreferrer"
->
+            <a href={pdfUrl} target="_blank" rel="noopener noreferrer">
               <FileText className="w-4 h-4" />
               View Experience PDF
               <Download className="w-4 h-4 ml-auto" />
             </a>
           </Button>
         ) : (
-          <Button disabled className="w-full font-body gap-2">
+          <Button disabled className="w-full font-body gap-2 opacity-70">
             <FileText className="w-4 h-4" />
-            PDF Not Available
+            PDF Unavailable
           </Button>
         )}
       </CardFooter>
