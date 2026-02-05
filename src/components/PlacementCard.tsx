@@ -43,32 +43,27 @@ const PlacementCard = ({
     day: "numeric",
   });
 
-  /* ✅ ONLY Cloudinary / Absolute URLs are valid */
+  /* ✅ STRICT CHECK: ONLY CLOUDINARY / ABSOLUTE URL */
   const isValidPdf =
     typeof pdfUrl === "string" &&
-    (pdfUrl.startsWith("https://res.cloudinary.com") ||
-      pdfUrl.startsWith("http"));
+    pdfUrl.startsWith("https://res.cloudinary.com");
 
   return (
-    <Card className="group overflow-hidden border-border/50 bg-card hover:shadow-lg transition-all duration-300 animate-fade-in">
+    <Card className="group overflow-hidden border-border/50 bg-card hover:shadow-lg transition-all duration-300">
       {/* HEADER */}
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full gradient-hero flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center">
               <User className="w-6 h-6 text-primary-foreground" />
             </div>
             <div>
-              <h3 className="font-display font-semibold text-lg text-foreground">
-                {studentName}
-              </h3>
-              <p className="text-sm text-muted-foreground font-body">
-                {rollNumber}
-              </p>
+              <h3 className="font-semibold text-lg">{studentName}</h3>
+              <p className="text-sm text-muted-foreground">{rollNumber}</p>
             </div>
           </div>
 
-          <Badge variant="secondary" className="font-body">
+          <Badge variant="secondary">
             <Calendar className="w-3 h-3 mr-1" />
             {formattedDate}
           </Badge>
@@ -77,33 +72,29 @@ const PlacementCard = ({
 
       {/* CONTENT */}
       <CardContent className="space-y-4">
-        <div className="flex items-center gap-2 text-sm font-body">
-          <GraduationCap className="w-4 h-4 text-accent" />
+        <div className="flex items-center gap-2 text-sm">
+          <GraduationCap className="w-4 h-4 text-primary" />
           <span className="text-muted-foreground">
-            {programme} - {branch}
+            {programme} – {branch}
           </span>
         </div>
 
         <div className="p-4 bg-secondary/50 rounded-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <Building2 className="w-5 h-5 text-accent" />
-            <span className="font-display font-semibold text-foreground">
-              {selectedCompany}
-            </span>
+          <div className="flex items-center gap-2 mb-1">
+            <Building2 className="w-5 h-5 text-primary" />
+            <span className="font-semibold">{selectedCompany}</span>
           </div>
-          <p className="text-sm text-muted-foreground font-body pl-7">
+          <p className="text-sm text-muted-foreground pl-7">
             {selectedProfile}
           </p>
         </div>
       </CardContent>
 
       {/* FOOTER */}
-      <CardFooter className="pt-3 border-t border-border/50">
+      <CardFooter className="pt-3 border-t">
         {isValidPdf ? (
-          <Button
-            asChild
-            className="w-full bg-primary hover:bg-navy-light text-primary-foreground font-body gap-2"
-          >
+          <Button asChild className="w-full gap-2">
+            {/* 🔥 KEY FIX: NO download ATTRIBUTE */}
             <a
               href={pdfUrl}
               target="_blank"
@@ -115,10 +106,7 @@ const PlacementCard = ({
             </a>
           </Button>
         ) : (
-          <Button
-            disabled
-            className="w-full font-body gap-2 opacity-60 cursor-not-allowed"
-          >
+          <Button disabled className="w-full gap-2 opacity-60">
             <FileText className="w-4 h-4" />
             PDF Unavailable
           </Button>

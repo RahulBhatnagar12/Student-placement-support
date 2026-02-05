@@ -5,9 +5,9 @@ import cloudinary from "../config/cloudinary.js";
 
 const router = express.Router();
 
-/* =====================================================
-   POST – Submit Placement Experience (PDF + Photo)
-   ===================================================== */
+/**
+ * POST – submit placement + PDF + PHOTO
+ */
 router.post(
   "/",
   upload.fields([
@@ -16,45 +16,50 @@ router.post(
   ]),
   async (req, res) => {
     try {
-      /* ------------------ PDF VALIDATION ------------------ */
-      if (!req.files?.pdf?.[0]?.buffer) {
-        return res.status(400).json({ message: "PDF not uploaded properly" });
+      /* ---------------- PDF CHECK ---------------- */
+      const pdfFile = req.files?.pdf?.[0];
+
+      if (!pdfFile || !pdfFile.buffer) {
+        return res.status(400).json({ message: "PDF not uploaded" });
       }
 
-      /* ------------------ UPLOAD PDF ------------------ */
-      const pdfBase64 = req.files.pdf[0].buffer.toString("base64");
-
+      /* ---------------- UPLOAD PDF ---------------- */
       const pdfUpload = await cloudinary.uploader.upload(
-        `data:application/pdf;base64,${pdfBase64}`,
+        `data:application/pdf;base64,${pdfFile.buffer.toString("base64")}`,
         {
           resource_type: "raw",
           folder: "placement_pdfs",
+          use_filename: true,        // 🔥 important
+          unique_filename: false,    // 🔥 important
         }
       );
 
-      /* ------------------ UPLOAD PHOTO (OPTIONAL) ------------------ */
+      /* ---------------- UPLOAD PHOTO (OPTIONAL) ---------------- */
       let photoUrl = null;
 
-      if (req.files?.photo?.[0]?.buffer) {
-        const photoBase64 =
-          req.files.photo[0].buffer.toString("base64");
+      const photoFile = req.files?.photo?.[0];
+      if (photoFile && photoFile.buffer) {
+        const mime = photoFile.mimetype || "image/jpeg";
 
         const photoUpload = await cloudinary.uploader.upload(
-          `data:${req.files.photo[0].mimetype};base64,${photoBase64}`,
+          `data:${mime};base64,${photoFile.buffer.toString("base64")}`,
           {
             folder: "placement_photos",
+            use_filename: true,
+            unique_filename: false,
           }
         );
 
         photoUrl = photoUpload.secure_url;
       }
 
-      /* ------------------ SAVE TO MONGODB ------------------ */
+      /* ---------------- SAVE TO DB ---------------- */
       const placement = await Placement.create({
         studentName: req.body.studentName,
         rollNumber: req.body.rollNumber,
         branch: req.body.branch,
         programme: req.body.programme,
+
         personalNote: req.body.personalNote || "",
 
         companiesShortlisted: req.body.companiesShortlisted
@@ -71,29 +76,24 @@ router.post(
         adviceDos: req.body.adviceDos || "",
         adviceDonts: req.body.adviceDonts || "",
 
-        pdfUrl: pdfUpload.secure_url, // ✅ Cloudinary URL
-        photoUrl, // ✅ Cloudinary URL or null
+        pdfUrl: pdfUpload.secure_url, // 🔥 Cloudinary RAW pdf
+        photoUrl,                    // 🔥 Cloudinary image
       });
 
-      res.status(201).json(placement);
+      return res.status(201).json(placement);
     } catch (err) {
       console.error("PLACEMENT UPLOAD ERROR:", err);
-      res.status(500).json({ message: "Failed to save placement" });
+      return res.status(500).json({ message: "Failed to save placement" });
     }
   }
 );
 
-/* =====================================================
-   GET – Fetch All Placements
-   ===================================================== */
+/**
+ * GET – fetch all placements
+ */
 router.get("/", async (req, res) => {
-  try {
-    const placements = await Placement.find().sort({ createdAt: -1 });
-    res.json(placements);
-  } catch (err) {
-    console.error("FETCH ERROR:", err);
-    res.status(500).json({ message: "Failed to fetch placements" });
-  }
+  const placements = await Placement.find().sort({ createdAt: -1 });
+  res.json(placements);
 });
 
 export default router;
